@@ -43,7 +43,7 @@ jobs:
       - name: Push to Kaggle
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_KEY }}
           # Set FIRST_RUN=true only on the very first run via workflow_dispatch
           FIRST_RUN: ${{ github.event.inputs.first_run || 'false' }}
         run: uv run python src/push.py
