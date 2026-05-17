@@ -35,7 +35,7 @@ jobs:
           chmod 600 ~/.kaggle/kaggle.json
 
       - name: Fetch data from PaleoBioDB
-        run: python src/fetch.py
+        run: uv run python src/fetch.py
 
       - name: Show dataset sizes
         run: ls -lh dataset/
@@ -46,7 +46,7 @@ jobs:
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
           # Set FIRST_RUN=true only on the very first run via workflow_dispatch
           FIRST_RUN: ${{ github.event.inputs.first_run || 'false' }}
-        run: python src/push.py
+        run: uv run python src/push.py
 
       - name: Upload dataset as GitHub artifact (backup)
         uses: actions/upload-artifact@v4
