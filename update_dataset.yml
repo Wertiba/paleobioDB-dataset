@@ -1,0 +1,59 @@
+name: Weekly PaleoBioDB → Kaggle
+
+on:
+  schedule:
+    # Every Monday at 08:00 UTC
+    - cron: "0 8 * * 1"
+  workflow_dispatch:  # allow manual trigger from GitHub UI
+
+jobs:
+  update-dataset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install uv
+        run: pip install -r uv
+
+      - name: Install requirements
+        run: uv sync
+
+      - name: Configure Kaggle credentials
+        run: |
+          mkdir -p ~/.kaggle
+          echo '{"username":"${{ secrets.KAGGLE_USERNAME }}","key":"${{ secrets.KAGGLE_KEY }}"}' \
+            > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Change directory
+        run: cd ./src
+
+      - name: Fetch data from PaleoBioDB
+        run: python fetch_data.py
+
+      - name: Show dataset sizes
+        run: ls -lh dataset/
+
+      - name: Push to Kaggle
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          # Set FIRST_RUN=true only on the very first run via workflow_dispatch
+          FIRST_RUN: ${{ github.event.inputs.first_run || 'false' }}
+        run: python push_to_kaggle.py
+
+      - name: Upload dataset as GitHub artifact (backup)
+        uses: actions/upload-artifact@v4
+        with:
+          name: paleobiodb-dataset-${{ github.run_number }}
+          path: dataset/
+          retention-days: 30
