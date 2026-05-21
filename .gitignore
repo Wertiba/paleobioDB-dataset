@@ -1,4 +1,4 @@
 .idea/
 .env
 .venv/
-/dataset/dataset-metadata.json
+/dataset/
