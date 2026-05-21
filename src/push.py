@@ -1,10 +1,10 @@
 import json
 import logging
-import os
 import subprocess  # noqa
 from datetime import UTC, datetime
 from pathlib import Path
 
+import yaml
 from dotenv import find_dotenv, load_dotenv
 
 load_dotenv(find_dotenv())
@@ -12,16 +12,24 @@ load_dotenv(find_dotenv())
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 
-DATASET_DIR = Path(__file__).parent.parent / "dataset"
-KAGGLE_USERNAME = os.getenv("KAGGLE_USERNAME")
-DATASET_SLUG = os.getenv("DATASET_SLUG")
+CONFIG = yaml.safe_load((Path(__file__).parent / "config.yml").read_text())
+KAGGLE = CONFIG["kaggle"]
+DATASET_DIR = Path(__file__).parent.parent / CONFIG["dataset"]["path"]
 
 
 def kaggle_push() -> None:
     """Create or version the Kaggle dataset."""
 
     metadata_path = DATASET_DIR / "dataset-metadata.json"
-    metadata_path.write_text(json.dumps({"id": f"{KAGGLE_USERNAME}/{DATASET_SLUG}"}))
+    metadata_path.write_text(
+        json.dumps(
+            {
+                "id": f"{KAGGLE['username']}/{KAGGLE['dataset_slug']}",
+                "licenses": [{"name": KAGGLE["license"]}],
+                "keywords": KAGGLE["keywords"],
+            }
+        )
+    )
 
     cmd = [
         "kaggle",
@@ -44,9 +52,5 @@ def kaggle_push() -> None:
         raise RuntimeError("kaggle CLI returned non-zero exit code")
 
 
-def main():
-    kaggle_push()
-
-
 if __name__ == "__main__":
-    main()
+    kaggle_push()

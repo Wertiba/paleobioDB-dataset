@@ -1,0 +1,12 @@
+kaggle:
+  username: romanrozen
+  dataset_slug: paleobiodb-global-dinosaur-occurrences
+  license: CC-BY-4.0
+  keywords:
+    - Tabular
+    - Global
+    - Earth And Nature
+    - Data Analytics
+    - Animals
+dataset:
+  path: dataset

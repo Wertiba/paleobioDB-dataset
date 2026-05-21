@@ -5,13 +5,16 @@ from pathlib import Path
 
 import httpx
 import pandas as pd
+import yaml
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 
 BASE_URL = "https://paleobiodb.org/data1.2"
 HEADERS = {"User-Agent": "paleobiodb-kaggle-pipeline/1.0"}
-OUTPUT_DIR = Path(__file__).parent.parent / "dataset"
+OUTPUT_DIR = DATASET_DIR = (
+    Path(__file__).parent.parent / yaml.safe_load((Path(__file__).parent / "config.yml").read_text())["dataset"]["path"]
+)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 
