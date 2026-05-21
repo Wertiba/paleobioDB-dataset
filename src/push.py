@@ -1,33 +1,38 @@
+import json
 import logging
 import os
 import subprocess  # noqa
 from datetime import UTC, datetime
 from pathlib import Path
 
+from dotenv import find_dotenv, load_dotenv
+
+load_dotenv(find_dotenv())
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 
 DATASET_DIR = Path(__file__).parent.parent / "dataset"
+KAGGLE_USERNAME = os.getenv("KAGGLE_USERNAME")
+DATASET_SLUG = os.getenv("DATASET_SLUG")
 
 
-def kaggle_push(new_dataset: bool = False) -> None:
+def kaggle_push() -> None:
     """Create or version the Kaggle dataset."""
 
-    if new_dataset:
-        cmd = ["kaggle", "datasets", "create", "-p", str(DATASET_DIR)]
-        log.info("Creating new Kaggle dataset…")
-    else:
-        cmd = [
-            "kaggle",
-            "datasets",
-            "version",
-            "-p",
-            str(DATASET_DIR),
-            "-m",
-            f"Auto-update {datetime.now(tz=UTC).strftime('%Y-%m-%d')}",
-        ]
-        log.info("Uploading new version to Kaggle…")
+    metadata_path = DATASET_DIR / "dataset-metadata.json"
+    metadata_path.write_text(json.dumps({"id": f"{KAGGLE_USERNAME}/{DATASET_SLUG}"}))
 
+    cmd = [
+        "kaggle",
+        "datasets",
+        "version",
+        "-p",
+        str(DATASET_DIR),
+        "-m",
+        f"Auto-update {datetime.now(tz=UTC).strftime('%Y-%m-%d')}",
+    ]
+    log.info("Uploading new version to Kaggle…")
     result = subprocess.run(cmd, capture_output=True, text=True)  # noqa
 
     if result.returncode == 0:
@@ -40,9 +45,7 @@ def kaggle_push(new_dataset: bool = False) -> None:
 
 
 def main():
-    # Set first_run=True only the very first time
-    first_run = os.environ.get("FIRST_RUN", "false").lower() == "true"
-    kaggle_push(new_dataset=first_run)
+    kaggle_push()
 
 
 if __name__ == "__main__":

@@ -9,5 +9,6 @@ dependencies = [
     "kaggle>=2.1.2",
     "kagglehub>=1.0.1",
     "pandas>=3.0.3",
+    "python-dotenv>=1.2.2",
     "ruff>=0.15.13",
 ]
